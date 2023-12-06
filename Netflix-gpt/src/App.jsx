@@ -1,13 +1,14 @@
 import { useState } from 'react'
 
-import './App.css'
+
+import Login from './component/Login'
 
 function App() {
   
 
   return (
     <>
-      <h1 className='text-lg text-green-400'>hello Netflix-gpt</h1>
+      <Login/>
     </>
   )
 }
