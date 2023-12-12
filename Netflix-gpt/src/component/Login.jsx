@@ -1,13 +1,15 @@
 import React, { useState, useRef } from "react";
+import {  createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import Header from "./Header";
 import { checkValidation } from "../utils/validate";
+import { auth } from "../utils/firebase";
 
 const Login = () => {
   const [isSignInForm, setIsSingnInForm] = useState(true);
-  const [errorMessage, SetErrorMessage] = useState(null)
+  const [errorMessage, SetErrorMessage] = useState(null);
 
   const toggleSignInForm = () => {
-    setIsSingnInForm(!isSignInForm);// if it is true then setFunction will be false
+    setIsSingnInForm(!isSignInForm); // if it is true then setFunction will be false
   };
 
   const email = useRef(null);
@@ -15,11 +17,41 @@ const Login = () => {
 
   const handleButtonClick = () => {
     //validate form data
-   
-    const message =  checkValidation(email.current.value, password.current.value);
-      SetErrorMessage(message);// used to dynamically print the error message
 
-    
+    const message = checkValidation(
+      email.current.value,
+      password.current.value
+    );
+    SetErrorMessage(message); // used to dynamically print the error message
+    if (message) return;
+    if (!isSignInForm) {
+      //sign up logic
+      createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log(user)
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          SetErrorMessage(errorCode+ "-"+ errorMessage)
+        });
+    } else{
+      //sign in logic from documnetation
+      signInWithEmailAndPassword(auth, email.current.value, password.current.value)
+  .then((userCredential) => {
+    // Signed in 
+    const user = userCredential.user;
+    console.log(user)
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    SetErrorMessage(errorCode+ "-"+ errorMessage)
+  });
+
+    }
   };
   return (
     <>
@@ -31,9 +63,10 @@ const Login = () => {
         />
       </div>
       <div>
-        <form 
-        onSubmit={(e)=>e.preventDefault()} //preventing the form from submiting automatically
-        className="w-3/12 absolute p-12 bg-black my-36 mx-auto right-0 left-0 text-white rounded-lg opacity-80">
+        <form
+          onSubmit={(e) => e.preventDefault()} //preventing the form from submiting automatically
+          className="w-3/12 absolute p-12 bg-black my-36 mx-auto right-0 left-0 text-white rounded-lg opacity-80"
+        >
           <h1 className="font-bold text-3xl py-4">
             {isSignInForm ? "Sign in " : "Sign up"}
           </h1>
@@ -52,7 +85,7 @@ const Login = () => {
             placeholder="Email or Phone Number"
           />
           <input
-          ref={password}
+            ref={password}
             className="p-4 my-4 w-full bg-gray-600"
             type="password"
             placeholder="Password"
